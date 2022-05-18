@@ -3,12 +3,17 @@ Create a list of lists compliant to the ConcePTION ecosystem from a data.frame
 
 ## Usage
 
-x is a data.frame object with at least columns code, coding_system and event_abbreviation
+x is a data.frame object with at least columns code, coding_system, and event_abbreviation.
 codying_system_recode can be:
 
  * "Auto" (default value) -> recode the codying_system column using the default values inside the function
  * False -> do nothing
  * a custom df -> use the df to recode the codying_system column. The df should have as the first two columns the old names and the new names respectively
+ 
+imputed_tags can be:
+ * NULL (default value) -> do nothing
+ * "narrow" -> recode missing as "narrow"
+ * "possible" -> recode missing as "possible"
 
 The function return the a list of list compliant to the ConcePTION ecosystem
 

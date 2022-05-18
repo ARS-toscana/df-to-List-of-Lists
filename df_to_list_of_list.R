@@ -1,9 +1,28 @@
-df_to_list_of_list <- function(x, codying_system_recode = "auto") {
+df_to_list_of_list <- function(x, codying_system_recode = "auto", imputed_tags = NULL) {
   
   if(!require(data.table)){install.packages("data.table")}
   suppressPackageStartupMessages(library(data.table))
   
   x <- data.table::as.data.table(df)
+  
+  if (!missing(imputed_tags)) {
+    if (tolower(imputed_tags) %in% c("narrow", "n")) {
+      imputed_tags <- "narrow"
+    } else if (tolower(imputed_tags) %in% c("possible", "p")) {
+      imputed_tags <- "possible"
+    } else {
+      stop("imputed_tags accepts only values narrow or possible")
+    }
+    
+    message(paste(x[tags == "", .N], "tags have been recoded to", imputed_tags))
+    x <- x[tags == "", tags := imputed_tags]
+    
+  }
+  
+  if ("tags" %in% colnames(x)) {
+    x <- x[type != "COV", event_abbreviation := paste(event_abbreviation, tags, sep = "_")]
+  }
+  
   x <- x[, .(code, coding_system, event_abbreviation)]
   
   if (isFALSE(codying_system_recode)) {
