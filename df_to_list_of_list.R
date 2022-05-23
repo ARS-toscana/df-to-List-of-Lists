@@ -3,9 +3,9 @@ df_to_list_of_list <- function(x, codying_system_recode = "auto", imputed_tags =
   if(!require(data.table)){install.packages("data.table")}
   suppressPackageStartupMessages(library(data.table))
   
-  x <- data.table::as.data.table(df)
+  x <- data.table::as.data.table(x)
   
-  if (!missing(imputed_tags)) {
+  if (!is.null(imputed_tags)) {
     if (tolower(imputed_tags) %in% c("narrow", "n")) {
       imputed_tags <- "narrow"
     } else if (tolower(imputed_tags) %in% c("possible", "p")) {
