@@ -25,7 +25,7 @@ df_to_list_of_list <- function(x, code_col = "code", concepts_col = "event_abbre
   }
   
   if ("tags" %in% colnames(x)) {
-    x <- x[type != "COV", (concepts_col) := paste(get(concepts_col), tags, sep = "_")]
+    x <- x[type != "COV" & !is.na(tags) & tags != "", (concepts_col) := paste(get(concepts_col), tags, sep = "_")]
   }
   
   x <- x[, .SD, .SDcols = c(code_col, "coding_system", concepts_col)]
@@ -50,7 +50,7 @@ df_to_list_of_list <- function(x, code_col = "code", concepts_col = "event_abbre
   x <- lapply(split(x, by = concepts_col, keep.by = F),
               split, by = "coding_system", keep.by = F)
   
-  x <- lapply(x, sapply, unlist, use.names = F, simplify = T)
+  x <- lapply(x, sapply, unlist, use.names = F, simplify = F)
   
   return(x)
 }
