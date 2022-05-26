@@ -1,9 +1,14 @@
-df_to_list_of_list <- function(x, codying_system_recode = "auto", imputed_tags = NULL) {
+df_to_list_of_list <- function(x, code_col = "code", concepts_col = "event_abbreviation", codying_system_col = T,
+                               codying_system_recode = "auto", imputed_tags = NULL) {
   
   if(!require(data.table)){install.packages("data.table")}
   suppressPackageStartupMessages(library(data.table))
   
   x <- data.table::as.data.table(x)
+  
+  if (!codying_system_col) {
+    x <- x[, coding_system := "ATC"]
+  }
   
   if (!is.null(imputed_tags)) {
     if (tolower(imputed_tags) %in% c("narrow", "n")) {
@@ -20,10 +25,10 @@ df_to_list_of_list <- function(x, codying_system_recode = "auto", imputed_tags =
   }
   
   if ("tags" %in% colnames(x)) {
-    x <- x[type != "COV", event_abbreviation := paste(event_abbreviation, tags, sep = "_")]
+    x <- x[type != "COV", (concepts_col) := paste(get(concepts_col), tags, sep = "_")]
   }
   
-  x <- x[, .(code, coding_system, event_abbreviation)]
+  x <- x[, .SD, .SDcols = c(code_col, "coding_system", concepts_col)]
   
   if (isFALSE(codying_system_recode)) {
     next
@@ -42,10 +47,11 @@ df_to_list_of_list <- function(x, codying_system_recode = "auto", imputed_tags =
       "coding_system" := c(colnames(codying_system_recode)[[2]])]
   }
   
-  x <- lapply(split(x, by = "event_abbreviation", keep.by = F),
+  x <- lapply(split(x, by = concepts_col, keep.by = F),
               split, by = "coding_system", keep.by = F)
   
   x <- lapply(x, sapply, unlist, use.names = F, simplify = T)
   
   return(x)
 }
+
