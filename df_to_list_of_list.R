@@ -1,5 +1,5 @@
 df_to_list_of_list <- function(x, code_col = "code", concepts_col = "event_abbreviation", codying_system_col = T,
-                               codying_system_recode = "auto", imputed_tags = NULL) {
+                               codying_system_recode = "auto", imputed_tags = NULL, type_col = "type") {
   
   if(!require(data.table)){install.packages("data.table")}
   suppressPackageStartupMessages(library(data.table))
@@ -10,25 +10,35 @@ df_to_list_of_list <- function(x, code_col = "code", concepts_col = "event_abbre
     x <- x[, coding_system := "ATC"]
   }
   
+  y <- copy(x)
+  
   if (!is.null(imputed_tags)) {
     if (tolower(imputed_tags) %in% c("narrow", "n")) {
       imputed_tags <- "narrow"
     } else if (tolower(imputed_tags) %in% c("possible", "p")) {
       imputed_tags <- "possible"
+    } else if (!imputed_tags) {
+      x <- x[!is.na(tags) & tags != "" & get(type_col) != "COV", ]
     } else {
       stop("imputed_tags accepts only values narrow or possible")
     }
     
-    message(paste(x[tags == "", .N], "tags have been recoded to", imputed_tags))
-    x <- x[tags == "", tags := imputed_tags]
-    
+    if (x[tags == "", .N] > 0) {
+      message(paste(x[tags == "", .N], "tags have been recoded to", imputed_tags))
+      x <- x[tags == "", tags := imputed_tags]
+    }
   }
   
   if ("tags" %in% colnames(x)) {
-    x <- x[type != "COV" & !is.na(tags) & tags != "", (concepts_col) := paste(get(concepts_col), tags, sep = "_")]
+    x <- x[!is.na(tags) & tags != "", (concepts_col) := paste(get(concepts_col), get(type_col), tags, sep = "_")]
   }
   
+  y <- y[, (concepts_col) := paste(get(concepts_col), get(type_col), sep = "_")]
+  
   x <- x[, .SD, .SDcols = c(code_col, "coding_system", concepts_col)]
+  y <- y[, .SD, .SDcols = c(code_col, "coding_system", concepts_col)]
+  
+  x <- unique(rbind(x, y))
   
   if (isFALSE(codying_system_recode)) {
     next
