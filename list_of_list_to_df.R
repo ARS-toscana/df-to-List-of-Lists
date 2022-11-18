@@ -9,7 +9,7 @@ list_of_list_to_df <- function(l) {
   
   out <- data.table::rbindlist(out)
   out[grepl("_narrow|_possible", event_abbreviation),
-        c("event_abbreviation", "tags") := tstrsplit(event_abbreviation, "(_)(?!.*\1)", perl = T, type.convert = T)]
+        c("event_abbreviation", "tags") := tstrsplit(event_abbreviation, "_(?!.*_)", perl = T, type.convert = T)]
   
   return(out)
 }
